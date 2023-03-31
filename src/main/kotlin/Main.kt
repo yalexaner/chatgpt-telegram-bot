@@ -1,7 +1,18 @@
-fun main(args: Array<String>) {
-    println("Hello World!")
+import com.github.kotlintelegrambot.bot
+import com.github.kotlintelegrambot.dispatch
+import com.github.kotlintelegrambot.dispatcher.text
+import com.github.kotlintelegrambot.entities.ChatId
+import io.github.cdimascio.dotenv.dotenv
+import util.TELEGRAM_BOT_TOKEN
 
-    // Try adding program arguments via Run/Debug configuration.
-    // Learn more about running applications: https://www.jetbrains.com/help/idea/running-applications.html.
-    println("Program arguments: ${args.joinToString()}")
+fun main() {
+    val bot = bot {
+        token = dotenv()[TELEGRAM_BOT_TOKEN]
+        dispatch {
+            text {
+                bot.sendMessage(ChatId.fromId(message.chat.id), text = text)
+            }
+        }
+    }
+    bot.startPolling()
 }

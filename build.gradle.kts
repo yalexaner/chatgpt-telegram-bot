@@ -3,14 +3,17 @@ plugins {
     application
 }
 
-group = "org.example"
-version = "1.0-SNAPSHOT"
+group = "yalexaner"
+version = "0.1"
 
 repositories {
     mavenCentral()
+    maven("https://jitpack.io")
 }
 
 dependencies {
+    implementation("io.github.kotlin-telegram-bot.kotlin-telegram-bot:telegram:6.0.7")
+    implementation("io.github.cdimascio:dotenv-kotlin:6.4.1")
     testImplementation(kotlin("test"))
 }
 
