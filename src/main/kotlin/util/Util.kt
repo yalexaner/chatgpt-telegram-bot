@@ -1,3 +1,4 @@
 package util
 
 const val TELEGRAM_BOT_TOKEN = "TELEGRAM_BOT_TOKEN"
+const val OPEN_AI_API_KEY = "OPEN_AI_API_KEY"
