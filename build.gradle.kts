@@ -38,6 +38,44 @@ tasks.test {
     useJUnitPlatform()
 }
 
+tasks {
+    val jar by getting(Jar::class) {
+        manifest {
+            attributes["Main-Class"] = "MainKt"
+        }
+        from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
+
+    @Suppress("UNUSED_VARIABLE")
+    val dockerBuild by creating {
+        dependsOn(jar)
+        doLast {
+            val jarFile = jar.archiveFile.get().asFile
+            val dockerImageName = "my-docker-image"
+            val dockerFilePath = File(projectDir, "Dockerfile")
+            val dockerBuildContext = File(projectDir, "build/docker")
+            dockerBuildContext.mkdirs()
+
+            copy {
+                from(jarFile)
+                into(dockerBuildContext)
+                rename(jarFile.name, "ChatGptTelegramBot.jar")
+            }
+
+            project.exec {
+                commandLine(
+                    "docker", "build",
+                    "-f", dockerFilePath.absolutePath,
+                    "-t", dockerImageName,
+                    "."
+                )
+                workingDir(dockerBuildContext)
+            }
+        }
+    }
+}
+
 kotlin {
     jvmToolchain(11)
 }
