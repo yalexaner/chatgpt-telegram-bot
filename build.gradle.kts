@@ -13,7 +13,14 @@ repositories {
 
 dependencies {
     // Kotlin Telegram Bot: https://github.com/kotlin-telegram-bot/kotlin-telegram-bot
-    implementation("io.github.kotlin-telegram-bot.kotlin-telegram-bot:telegram:6.0.7")
+    implementation("io.github.kotlin-telegram-bot.kotlin-telegram-bot:telegram:6.0.7") {
+        // excluded because of the next warning:
+        // Provides transitive vulnerable dependency maven:com.google.code.gson:gson:2.8.5
+        exclude(group = "com.google.code.gson", module = "gson")
+    }
+
+    // Gson (needed for Kotlin Telegram Bot)
+    implementation("com.google.code.gson:gson:2.10.1")
 
     // 🗝️ dotenv-kotlin: https://github.com/cdimascio/dotenv-kotlin
     implementation("io.github.cdimascio:dotenv-kotlin:6.4.1")
