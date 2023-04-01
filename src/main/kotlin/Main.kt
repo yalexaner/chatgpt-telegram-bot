@@ -1,49 +1,44 @@
-import com.aallam.openai.api.BetaOpenAI
-import com.aallam.openai.api.chat.ChatCompletion
-import com.aallam.openai.api.chat.ChatCompletionRequest
-import com.aallam.openai.api.chat.ChatMessage
-import com.aallam.openai.api.chat.ChatRole
-import com.aallam.openai.api.model.ModelId
-import com.aallam.openai.client.OpenAI
-import com.github.kotlintelegrambot.bot
-import com.github.kotlintelegrambot.dispatch
-import com.github.kotlintelegrambot.dispatcher.text
+import chat.ChatGpt
+import com.github.kotlintelegrambot.Bot
 import com.github.kotlintelegrambot.entities.ChatId
-import io.github.cdimascio.dotenv.dotenv
+import com.github.kotlintelegrambot.entities.ParseMode
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import telegram.telegramBot
 import util.OPEN_AI_API_KEY
 import util.TELEGRAM_BOT_TOKEN
+import util.dotenv
 
-@OptIn(BetaOpenAI::class)
+private const val DEBUG = false
+
+private lateinit var chatGpt: ChatGpt
+private lateinit var bot: Bot
+
 fun main() {
-    val openAI = OpenAI(dotenv[OPEN_AI_API_KEY])
-    val bot = bot {
-        token = dotenv[TELEGRAM_BOT_TOKEN]
-        dispatch {
-            text {
-                runBlocking {
-                    launch {
-                        val chatCompletionRequest = ChatCompletionRequest(
-                            model = ModelId("gpt-3.5-turbo"),
-                            messages = listOf(
-                                ChatMessage(
-                                    role = ChatRole.User,
-                                    content = text,
-                                )
-                            )
-                        )
-                        val completion: ChatCompletion = openAI.chatCompletion(chatCompletionRequest)
-                        bot.sendMessage(
-                            ChatId.fromId(message.chat.id),
-                            text = completion.choices.firstOrNull()?.message?.content ?: "Nothing"
-                        )
-                    }
-                }
-            }
-        }
+    val chatGptApiKey = if (DEBUG) {
+        dotenv[OPEN_AI_API_KEY]
+    } else {
+        System.getenv(OPEN_AI_API_KEY)
+    }
+
+    val telegramBotToken = if (DEBUG) {
+        dotenv[TELEGRAM_BOT_TOKEN]
+    } else {
+        System.getenv(TELEGRAM_BOT_TOKEN)
+    }
+
+    chatGpt = ChatGpt(chatGptApiKey)
+    bot = telegramBot(telegramBotToken) {
+        dispatchText(::dispatchText)
     }
     bot.startPolling()
 }
 
-private val dotenv by lazy { dotenv() }
+private fun dispatchText(id: Long, text: String) = CoroutineScope(Dispatchers.IO).launch {
+    bot.sendMessage(
+        ChatId.fromId(id),
+        text = chatGpt.completeRequest(text) ?: "```No message received```",
+        parseMode = ParseMode.MARKDOWN,
+    )
+}
