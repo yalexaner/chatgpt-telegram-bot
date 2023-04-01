@@ -52,7 +52,7 @@ tasks {
         dependsOn(jar)
         doLast {
             val jarFile = jar.archiveFile.get().asFile
-            val dockerImageName = "my-docker-image"
+            val dockerImageName = "chatgpt-telegram-bot"
             val dockerFilePath = File(projectDir, "Dockerfile")
             val dockerBuildContext = File(projectDir, "build/docker")
             dockerBuildContext.mkdirs()
